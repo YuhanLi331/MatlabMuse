@@ -1,4 +1,4 @@
-clear all;
+clear;
 close all;
 clc;  
 
@@ -77,13 +77,16 @@ write(controlCharacteristic,[uint8(2) uint8('d') uint8(10)],'withoutresponse');
 
 % create a bunch of empty variables
 events = zeros(4,10000000);
-eegData = zeros(4,12);
+eegData = zeros(4,230100); %460000 for a hour, 100 for error space
+eegData_index=1;
 eegSamples = zeros(1,12);
 tempEEG = zeros(4,12);
 plotBuffer = zeros(4,512);
 previousSamples = zeros(4,2,3);
 previousResults = zeros(4,2,3);
-latency_records=[];
+
+latency_records=zeros(1,30000);
+latency_index=1;
 
     
 % set up audioport 
@@ -163,20 +166,21 @@ while collectData
     
     dataCounter = dataCounter + 1;
     
-    % append data for storage and plotting
-    eegData = [eegData tempEEG];
+    % record data in the preallocated array and for storage and plotting 
+    eegData(:,eegData_index:eegData_index+12) = tempEEG;
+    eegData_index = eegData_index+12;
     plotSample = flip(tempEEG,2);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %Pseudo condition
-    if eegData(2,end)>=100
+    if eegData(2,eegData_index)>=100 %channel and value
         t1=GetSecs;
         PsychPortAudio('Start', pahandle, [], [] ,[] ,inf, []);
         t2=GetSecs;
         latency=t2-t1;
         
-        latency_records=[latency_records latency];
-        
+        latency_records(latency_index)=latency;
+        latency_index=latency_index+1;
         
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,11 +278,13 @@ while collectData
         collectData = false;
     end
 
-    if length(eegData) >= 230000 %460000
+    if eegData_index >= 230000 %460000
         tempdata = eegData;
         save(("SDT_data"+ saveindex + ".mat"),"tempdata");
         saveindex = saveindex+1;
-        eegData = zeros(4,12);
+        %back to initialize array
+        eegData = zeros(4,230100);
+        eegData_index=1;
     end
 end
 
