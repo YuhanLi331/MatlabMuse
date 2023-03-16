@@ -1,6 +1,5 @@
 clear;
 close all;
-clc;  
 
 % by Olav Krigolson
 % program to connect to a MUSEdirectly to MATLAB using ble and stream data directly without using
@@ -89,13 +88,13 @@ latency_records=zeros(1,30000);
 latency_index=1;
 
     
-% set up audioport 
-    InitializePsychSound(1);
-    FREQUENCY=48000;
-    CHANNELS=2;
-	pahandle = PsychPortAudio('Open', [], 1, [], FREQUENCY, CHANNELS, [], 0.015);
-    [sounddata, soundfreq] = audioread('xiaolu.wav');
-	PsychPortAudio('FillBuffer', pahandle, sounddata');
+% % set up audioport 
+%     InitializePsychSound(1);
+%     FREQUENCY=48000;
+%     CHANNELS=2;
+% 	pahandle = PsychPortAudio('Open', [], 1, [], FREQUENCY, CHANNELS, [], 0.015);
+%     [sounddata, soundfreq] = audioread('pink.wav');
+% 	PsychPortAudio('FillBuffer', pahandle, sounddata');
 
 
 % commands:
@@ -144,7 +143,7 @@ endCollection = 0;
 collectData = true;
 f = figure;
 dataCounter = 1;
-tempdata = zeros(4,460800);
+tempdata = zeros(5,230100);
 saveindex = 1;
 
 while collectData
@@ -167,23 +166,24 @@ while collectData
     dataCounter = dataCounter + 1;
     
     % record data in the preallocated array and for storage and plotting 
-    eegData(:,eegData_index:eegData_index+12) = tempEEG;
+    eegData(:,eegData_index:eegData_index+11) = tempEEG;
     eegData_index = eegData_index+12;
     plotSample = flip(tempEEG,2);
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %Pseudo condition
-    if eegData(2,eegData_index)>=100 %channel and value
-        t1=GetSecs;
-        PsychPortAudio('Start', pahandle, [], [] ,[] ,inf, []);
-        t2=GetSecs;
-        latency=t2-t1;
-        
-        latency_records(latency_index)=latency;
-        latency_index=latency_index+1;
-        
-    end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     %Pseudo condition
+%     if eegData(2,eegData_index-1)>=100 %channel and value
+%         t1=GetSecs;
+%         PsychPortAudio('Start', pahandle, [], [] ,[] ,inf, []);
+%         t2=GetSecs;
+%         latency=t2-t1;
+%         latency_records(latency_index)=latency;
+%         tempdata(5,latency_index)=eegData_index; 
+%           %%write down timestamp when stimulation triggered
+%         latency_index=latency_index+1;
+%         
+%     end
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
     % clean the data with a biquad filter
@@ -278,13 +278,22 @@ while collectData
         collectData = false;
     end
 
-    if eegData_index >= 230000 %460000
-        tempdata = eegData;
-        save(("SDT_data"+ saveindex + ".mat"),"tempdata");
+    if eegData_index >= 230000 %460000 for 30 min, 230000 for 15 min
+        tempdata(1:4,:) = eegData;
+
+        current_time_str = datestr(now, 'yyyy-mm-dd_HH-MM-SS');
+        folder_path = 'E:\Test\MatlabMuse-1\Data';
+        filename = sprintf('%d_SDT_data_%s.mat', saveindex,current_time_str);
+        full_path = fullfile(folder_path, filename);
+        save(full_path, 'tempdata');
+
         saveindex = saveindex+1;
         %back to initialize array
         eegData = zeros(4,230100);
         eegData_index=1;
+
+
+
     end
 end
 
