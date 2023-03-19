@@ -278,7 +278,7 @@ while collectData
         collectData = false;
     end
 
-    if eegData_index >= 230 %460000 for 30 min, 230000 for 15 min
+    if eegData_index >= 230000 %460000 for 30 min, 230000 for 15 min
         tempdata(1:4,:) = eegData;
 
         current_time_str = datestr(now, 'yyyy-mm-dd_HH-MM-SS');
