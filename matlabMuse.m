@@ -88,13 +88,13 @@ latency_records=zeros(1,30000);
 latency_index=1;
 
     
-% % set up audioport 
-%     InitializePsychSound(1);
-%     FREQUENCY=48000;
-%     CHANNELS=2;
-% 	pahandle = PsychPortAudio('Open', [], 1, [], FREQUENCY, CHANNELS, [], 0.015);
-%     [sounddata, soundfreq] = audioread('pink.wav');
-% 	PsychPortAudio('FillBuffer', pahandle, sounddata');
+% set up audioport 
+    InitializePsychSound(1);
+    FREQUENCY=48000;
+    CHANNELS=2;
+	pahandle = PsychPortAudio('Open', [], 1, [], FREQUENCY, CHANNELS, [], 0.015);
+    [sounddata, soundfreq] = audioread('pink.wav');
+	PsychPortAudio('FillBuffer', pahandle, sounddata');
 
 
 % commands:
@@ -170,20 +170,20 @@ while collectData
     eegData_index = eegData_index+12;
     plotSample = flip(tempEEG,2);
 
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     %Pseudo condition
-%     if eegData(2,eegData_index-1)>=100 %channel and value
-%         t1=GetSecs;
-%         PsychPortAudio('Start', pahandle, [], [] ,[] ,inf, []);
-%         t2=GetSecs;
-%         latency=t2-t1;
-%         latency_records(latency_index)=latency;
-%         tempdata(5,latency_index)=eegData_index; 
-%           %%write down timestamp when stimulation triggered
-%         latency_index=latency_index+1;
-%         
-%     end
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Pseudo condition
+    if eegData(2,eegData_index-1)>=100 %channel and value
+        t1=GetSecs;
+        PsychPortAudio('Start', pahandle, [], [] ,[] ,inf, []);
+        t2=GetSecs;
+        latency=t2-t1;
+        latency_records(latency_index)=latency;
+        tempdata(5,latency_index)=eegData_index; 
+          %%write down timestamp when stimulation triggered
+        latency_index=latency_index+1;
+        
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
     % clean the data with a biquad filter
@@ -278,7 +278,7 @@ while collectData
         collectData = false;
     end
 
-    if eegData_index >= 230000 %460000 for 30 min, 230000 for 15 min
+    if eegData_index >= 230 %460000 for 30 min, 230000 for 15 min
         tempdata(1:4,:) = eegData;
 
         current_time_str = datestr(now, 'yyyy-mm-dd_HH-MM-SS');
